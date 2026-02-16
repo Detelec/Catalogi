@@ -1,21 +1,20 @@
 <!doctype html>
 <html lang="nl">
   <head>
-    <!-- Essential meta tags -->
+    <!-- Essential meta tags - zonder maximum-scale voor geen automatische zoom -->
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
 
-    <!-- Preload critical resources -->
-    <link rel="preconnect" href="https://cdn.jsdelivr.net">
-    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
-    <link rel="preload" href="pdf/Detelec-catalogus.pdf" as="fetch" type="application/pdf" crossorigin="anonymous">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     
-    <!-- Bootstrap CSS - alleen laden op mobiel voor betere prestaties -->
     <style>
-        /* Critical CSS inline voor snellere rendering */
+        /* Standaard lettertype voor hele pagina */
+        * {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        
         html, body {
             height: 100%;
             margin: 0;
@@ -33,7 +32,6 @@
             flex: 1;
             position: relative;
             background-color: #f8f9fa;
-            min-height: 300px; /* Voorkom layout shift */
         }
         
         .pdf-container iframe {
@@ -63,10 +61,9 @@
             background-color: #272727;
             border-radius: 5px;
             margin-top: 10px;
-            transition: background-color 0.2s ease;
         }
         
-        .mobile-download-banner a:active {
+        .mobile-download-banner a:hover {
             background-color: #383838;
         }
         
@@ -78,8 +75,10 @@
             color: #666;
             font-size: 14px;
             z-index: 1;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
         
+        /* Alleen tonen op mobiel */
         @media (max-width: 768px) {
             .mobile-download-banner {
                 display: block;
@@ -90,6 +89,7 @@
             }
         }
         
+        /* Voor hele kleine schermen */
         @media (max-width: 480px) {
             .mobile-download-banner {
                 padding: 10px;
@@ -108,93 +108,64 @@
   </head>
   <body>
     <div class="container-custom">
-        <!-- Mobile download banner -->
+        <!-- Mobiele download banner -->
         <div class="mobile-download-banner">
             <div>Bekijk de catalogus op mobiel</div>
-            <a href="pdf/Detelec-catalogus.pdf" download="Detelec-catalogus.pdf" rel="noopener noreferrer">Download PDF</a>
+            <a href="pdf/Detelec-catalogus.pdf" download="Detelec-catalogus.pdf">Download PDF</a>
         </div>
         
-        <!-- PDF viewer met loading indicator -->
+        <!-- PDF viewer -->
         <div class="pdf-container">
             <div class="loading-indicator" id="loadingIndicator">Catalogus laden...</div>
             <iframe id="pdfViewer" 
                     src="pdf/Detelec-catalogus.pdf#toolbar=1&navpanes=1&view=FitH" 
                     title="Detelec catalogus" 
-                    allowfullscreen
-                    importance="high"
-                    loading="eager">
+                    allowfullscreen>
             </iframe>
         </div>
     </div>
     
-    <!-- Bootstrap JS - optioneel laden voor betere prestaties -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous" defer></script>
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     
     <script>
-        // Optimized mobile detection - gebruik 1 check
+        // Eenvoudige mobile detectie
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         const iframe = document.getElementById('pdfViewer');
         const loadingIndicator = document.getElementById('loadingIndicator');
         
-        // Directe optimalisatie voor mobiel
+        // Alleen aanpassingen voor mobiel
         if (isMobile) {
             // Betere parameters voor mobiele weergave
             iframe.src = 'pdf/Detelec-catalogus.pdf#toolbar=1&navpanes=1&view=FitV&scrollbar=1';
             
-            // Snelle check of PDF laadt
+            // Verberg loading indicator wanneer PDF geladen is
             iframe.onload = function() {
                 loadingIndicator.style.display = 'none';
             };
             
-            // Timeout voor fallback
-            const timeoutId = setTimeout(() => {
+            // Timeout voor als laden te lang duurt
+            setTimeout(function() {
                 if (loadingIndicator.style.display !== 'none') {
-                    console.warn('PDF laadt traag op mobiel');
-                    // Toon download link indien nodig
+                    loadingIndicator.innerHTML = 'Klik <a href="pdf/Detelec-catalogus.pdf" target="_blank" style="color: #0066cc;">hier</a> om de catalogus te openen';
                 }
             }, 5000);
-            
-            iframe.onerror = function() {
-                clearTimeout(timeoutId);
-                loadingIndicator.innerHTML = 'Klik <a href="pdf/Detelec-catalogus.pdf" target="_blank">hier</a> om de catalogus te openen';
-            };
         } else {
-            // Desktop: verberg loading indicator sneller
+            // Desktop: verberg loading indicator direct bij laden
             iframe.onload = function() {
                 loadingIndicator.style.display = 'none';
             };
         }
         
-        // Geoptimaliseerde resize handler met requestAnimationFrame
-        let resizeTimer;
+        // Simpele resize handler
         window.addEventListener('resize', function() {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(() => {
-                requestAnimationFrame(function() {
-                    const container = document.querySelector('.pdf-container');
-                    if (window.innerWidth <= 768) {
-                        container.style.height = (window.innerHeight - 120) + 'px';
-                    } else {
-                        container.style.height = '100vh';
-                    }
-                });
-            }, 100); // Debounce voor betere performance
+            var container = document.querySelector('.pdf-container');
+            if (window.innerWidth <= 768) {
+                container.style.height = (window.innerHeight - 120) + 'px';
+            } else {
+                container.style.height = '100vh';
+            }
         });
-
-        // Preload PDF als optie (werkt alleen in sommige browsers)
-        if ('connection' in navigator && navigator.connection.saveData === false) {
-            const link = document.createElement('link');
-            link.rel = 'preload';
-            link.as = 'document';
-            link.href = 'pdf/Detelec-catalogus.pdf';
-            link.type = 'application/pdf';
-            document.head.appendChild(link);
-        }
-
-        // Cache busting voor development - verwijder in productie
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            iframe.src = 'pdf/Detelec-catalogus.pdf#toolbar=1&navpanes=1&view=FitH&v=' + Date.now();
-        }
     </script>
   </body>
 </html>
